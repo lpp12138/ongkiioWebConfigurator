@@ -10,7 +10,6 @@
     <div class="container">
         <header>
             <h1>Ongeki IO Configuration Generator</h1>
-            <p>Configure input devices for ongeki-io</p>
         </header>
 
         <main>
@@ -20,6 +19,7 @@
                 <div class="controls">
                     <button id="add-config-btn" class="btn btn-primary">Add Configuration</button>
                     <div class="file-controls">
+                        <button id="reset-btn" class="btn btn-danger">Reset</button>
                         <button id="import-btn" class="btn btn-secondary">Import JSON</button>
                         <button id="export-btn" class="btn btn-secondary">Export JSON</button>
                         <input type="file" id="file-input" accept=".json" style="display: none;">
@@ -51,7 +51,7 @@
                         <label for="scope">Scope:</label>
                         <select id="scope" name="scope" required>
                             <option value="">Select Scope</option>
-                            <option value="All">All</option>
+                            <option value="All" selected>All</option>
                             <option value="GamePlay">GamePlay (Buttons + Lever)</option>
                             <option value="Buttons">Buttons (All buttons)</option>
                             <option value="GameButtons">GameButtons (L1-L3, R1-R3, Side)</option>

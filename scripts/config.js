@@ -4,14 +4,12 @@
 class Config {
     constructor() {
         this.configItems = [];
-        this.loadFromLocalStorage();
     }
 
     // Add a new configuration item
     addConfigItem(configItem) {
         configItem.id = this.generateId();
         this.configItems.push(configItem);
-        this.saveToLocalStorage();
         return configItem;
     }
 
@@ -20,7 +18,6 @@ class Config {
         const index = this.configItems.findIndex(item => item.id === id);
         if (index !== -1) {
             this.configItems[index] = { ...updatedItem, id };
-            this.saveToLocalStorage();
             return this.configItems[index];
         }
         return null;
@@ -31,7 +28,6 @@ class Config {
         const index = this.configItems.findIndex(item => item.id === id);
         if (index !== -1) {
             this.configItems.splice(index, 1);
-            this.saveToLocalStorage();
             return true;
         }
         return false;
@@ -157,7 +153,6 @@ class Config {
                     newConfigItem.connected = configItem.connected;
                     return newConfigItem;
                 });
-                this.saveToLocalStorage();
                 return true;
             }
 
@@ -167,7 +162,6 @@ class Config {
                     ...item,
                     id: this.generateId()
                 }));
-                this.saveToLocalStorage();
                 return true;
             }
 
@@ -208,13 +202,12 @@ class Config {
     // Clear all configurations
     clearAll() {
         this.configItems = [];
-        this.saveToLocalStorage();
     }
 }
 
 // Configuration Item Factory
 class ConfigItem {
-    constructor(ioType, scope, parameters = {}) {
+    constructor(ioType, scope = 'All', parameters = {}) {
         this.id = null; // Will be set when added to config
         this.ioType = ioType;
         this.scope = scope;
@@ -312,20 +305,20 @@ const ParameterTemplates = {
         port: { type: 'number', label: 'Port', placeholder: '4354', required: true, min: 1, max: 65535 }
     },
     Keyboard: {
-        l1: { type: 'number', label: 'L1 Key Code', placeholder: '-1', required: false },
-        l2: { type: 'number', label: 'L2 Key Code', placeholder: '-1', required: false },
-        l3: { type: 'number', label: 'L3 Key Code', placeholder: '-1', required: false },
-        lSide: { type: 'number', label: 'LSide Key Code', placeholder: '-1', required: false },
-        lMenu: { type: 'number', label: 'LMenu Key Code', placeholder: '-1', required: false },
-        r1: { type: 'number', label: 'R1 Key Code', placeholder: '-1', required: false },
-        r2: { type: 'number', label: 'R2 Key Code', placeholder: '-1', required: false },
-        r3: { type: 'number', label: 'R3 Key Code', placeholder: '-1', required: false },
-        rSide: { type: 'number', label: 'RSide Key Code', placeholder: '-1', required: false },
-        rMenu: { type: 'number', label: 'RMenu Key Code', placeholder: '-1', required: false },
-        test: { type: 'number', label: 'Test Key Code', placeholder: '-1', required: false },
-        service: { type: 'number', label: 'Service Key Code', placeholder: '-1', required: false },
-        coin: { type: 'number', label: 'Coin Key Code', placeholder: '-1', required: false },
-        scan: { type: 'number', label: 'Scan Key Code', placeholder: '-1', required: false }
+        l1: { type: 'number', label: 'L1 Key Code', placeholder: '-1', required: false, scopes: ['All', 'GamePlay', 'Buttons', 'GameButtons', 'KeyBoard', 'Left'] },
+        l2: { type: 'number', label: 'L2 Key Code', placeholder: '-1', required: false, scopes: ['All', 'GamePlay', 'Buttons', 'GameButtons', 'KeyBoard', 'Left'] },
+        l3: { type: 'number', label: 'L3 Key Code', placeholder: '-1', required: false, scopes: ['All', 'GamePlay', 'Buttons', 'GameButtons', 'KeyBoard', 'Left'] },
+        lSide: { type: 'number', label: 'LSide Key Code', placeholder: '-1', required: false, scopes: ['All', 'GamePlay', 'Buttons', 'GameButtons', 'Side', 'Left'] },
+        lMenu: { type: 'number', label: 'LMenu Key Code', placeholder: '-1', required: false, scopes: ['All', 'Buttons', 'Menu', 'Left'] },
+        r1: { type: 'number', label: 'R1 Key Code', placeholder: '-1', required: false, scopes: ['All', 'GamePlay', 'Buttons', 'GameButtons', 'KeyBoard', 'Right'] },
+        r2: { type: 'number', label: 'R2 Key Code', placeholder: '-1', required: false, scopes: ['All', 'GamePlay', 'Buttons', 'GameButtons', 'KeyBoard', 'Right'] },
+        r3: { type: 'number', label: 'R3 Key Code', placeholder: '-1', required: false, scopes: ['All', 'GamePlay', 'Buttons', 'GameButtons', 'KeyBoard', 'Right'] },
+        rSide: { type: 'number', label: 'RSide Key Code', placeholder: '-1', required: false, scopes: ['All', 'GamePlay', 'Buttons', 'GameButtons', 'Side', 'Right'] },
+        rMenu: { type: 'number', label: 'RMenu Key Code', placeholder: '-1', required: false, scopes: ['All', 'Buttons', 'Menu', 'Right'] },
+        test: { type: 'number', label: 'Test Key Code', placeholder: '-1', required: false, scopes: ['All'] },
+        service: { type: 'number', label: 'Service Key Code', placeholder: '-1', required: false, scopes: ['All'] },
+        coin: { type: 'number', label: 'Coin Key Code', placeholder: '-1', required: false, scopes: ['All'] },
+        scan: { type: 'number', label: 'Scan Key Code', placeholder: '-1', required: false, scopes: ['All'] }
     },
     Usbmux: {
         port: { type: 'number', label: 'Port', placeholder: '4354', required: true, min: 1, max: 65535 }
@@ -340,8 +333,33 @@ const ScopeDefinitions = {
     Led: 'LED outputs only'
 };
 
+// Function to get keyboard parameters based on scope
+function getKeyboardParametersForScope(scope) {
+    const allKeyboardParams = ParameterTemplates.Keyboard;
+    const filteredParams = {};
+
+    // If scope is individual button, only show that button
+    if (['L1', 'L2', 'L3', 'LSide', 'LMenu', 'R1', 'R2', 'R3', 'RSide', 'RMenu'].includes(scope)) {
+        const paramKey = scope.toLowerCase();
+        if (allKeyboardParams[paramKey]) {
+            filteredParams[paramKey] = allKeyboardParams[paramKey];
+        }
+        return filteredParams;
+    }
+
+    // Filter parameters based on scope
+    Object.entries(allKeyboardParams).forEach(([key, config]) => {
+        if (config.scopes && config.scopes.includes(scope)) {
+            filteredParams[key] = config;
+        }
+    });
+
+    return filteredParams;
+}
+
 // Export global configuration instance
 window.gameConfig = new Config();
 window.ConfigItem = ConfigItem;
 window.ParameterTemplates = ParameterTemplates;
 window.ScopeDefinitions = ScopeDefinitions;
+window.getKeyboardParametersForScope = getKeyboardParametersForScope;

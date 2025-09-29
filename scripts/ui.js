@@ -12,6 +12,7 @@ class UIManager {
 
     // Initialize all event listeners
     initializeEventListeners() {
+        document.getElementById('reset-btn').addEventListener('click', () => this.resetConfiguration());
         // Configuration management buttons
         document.getElementById('add-config-btn').addEventListener('click', () => this.showConfigForm());
         document.getElementById('save-config-btn').addEventListener('click', () => this.saveConfiguration());
@@ -24,7 +25,7 @@ class UIManager {
 
         // Form change handlers
         document.getElementById('io-type').addEventListener('change', () => this.handleIOTypeChange());
-        document.getElementById('scope').addEventListener('change', () => this.updateConfigPreview());
+        document.getElementById('scope').addEventListener('change', () => this.handleScopeChange());
 
         // Form validation on input
         document.getElementById('config-form').addEventListener('input', () => this.validateForm());
@@ -88,7 +89,26 @@ class UIManager {
 
     // Handle IO type change
     handleIOTypeChange() {
+        // Set default scope to "All" when IO type changes
+        const scopeSelect = document.getElementById('scope');
+        if (!scopeSelect.value) {
+            scopeSelect.value = 'All';
+        }
+
         this.updateParametersSection();
+        this.validateForm();
+        this.updateConfigPreview();
+    }
+
+    // Handle scope change
+    handleScopeChange() {
+        const ioType = document.getElementById('io-type').value;
+
+        // Only update parameters section for keyboard type since it's scope-dependent
+        if (ioType === 'Keyboard') {
+            this.updateParametersSection();
+        }
+
         this.validateForm();
         this.updateConfigPreview();
     }
@@ -96,6 +116,7 @@ class UIManager {
     // Update parameters section based on selected IO type
     updateParametersSection() {
         const ioType = document.getElementById('io-type').value;
+        const scope = document.getElementById('scope').value;
         const parametersSection = document.getElementById('parameters-section');
 
         if (!ioType || !ParameterTemplates[ioType]) {
@@ -103,7 +124,17 @@ class UIManager {
             return;
         }
 
-        const template = ParameterTemplates[ioType];
+        let template = ParameterTemplates[ioType];
+
+        // For keyboard type, filter parameters based on scope
+        if (ioType === 'Keyboard' && scope) {
+            template = getKeyboardParametersForScope(scope);
+            if (Object.keys(template).length === 0) {
+                parametersSection.innerHTML = '<p class="empty-state">No parameters available for this scope</p>';
+                return;
+            }
+        }
+
         parametersSection.innerHTML = this.generateParameterFields(template);
 
         // Add event listeners to new parameter fields
@@ -138,11 +169,8 @@ class UIManager {
         if (button) {
             button.textContent = 'Press any key...';
             button.classList.add('capturing');
-            button.disabled = true;
         }
 
-        // Show capture modal/indicator
-        this.showCaptureIndicator();
     }
 
     // Stop key capture
@@ -156,8 +184,6 @@ class UIManager {
             button.classList.remove('capturing');
             button.disabled = false;
         }
-
-        this.hideCaptureIndicator();
         this.captureTargetId = null;
     }
 
@@ -187,27 +213,7 @@ class UIManager {
 
         // Show key info
         this.showKeyInfo(event, keyCode);
-
-        // Stop capturing after a short delay
-        setTimeout(() => {
-            this.stopKeyCapture();
-        }, 1000);
-    }
-
-    // Show capture indicator
-    showCaptureIndicator() {
-        const indicator = document.createElement('div');
-        indicator.id = 'key-capture-indicator';
-        indicator.className = 'capture-indicator';
-        indicator.innerHTML = `
-            <div class="capture-modal">
-                <h3>Key Capture Mode</h3>
-                <p>Press any key to capture its key code</p>
-                <p class="capture-hint">Press ESC to cancel</p>
-                <button type="button" class="btn btn-secondary" onclick="uiManager.stopKeyCapture()">Cancel</button>
-            </div>
-        `;
-        document.body.appendChild(indicator);
+        this.stopKeyCapture();
     }
 
     // Hide capture indicator
@@ -335,11 +341,17 @@ class UIManager {
     // Collect form data
     collectFormData() {
         const ioType = document.getElementById('io-type').value;
-        const scope = document.getElementById('scope').value;
+        const scope = document.getElementById('scope').value || 'All';
         const parameters = {};
 
         // Handle parameter collection based on IO type
-        const template = ParameterTemplates[ioType];
+        let template = ParameterTemplates[ioType];
+
+        // For keyboard type, use scope-specific template
+        if (ioType === 'Keyboard' && scope) {
+            template = getKeyboardParametersForScope(scope);
+        }
+
         if (template) {
             Object.keys(template).forEach(key => {
                 const field = document.getElementById(`param-${key}`);
@@ -503,14 +515,20 @@ class UIManager {
         return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
     }
 
+    
+    resetConfiguration() {
+        gameConfig.clearAll();
+        this.refreshConfigList();
+        this.updateConfigPreview();
+        this.showSuccessMessage('Configuration reset successfully');
+    }
+
     // Delete a configuration
     deleteConfiguration(id) {
-        if (confirm('Are you sure you want to delete this configuration?')) {
             gameConfig.removeConfigItem(id);
             this.refreshConfigList();
             this.updateConfigPreview();
             this.showSuccessMessage('Configuration deleted successfully');
-        }
     }
 
     // Toggle configuration enabled state
@@ -580,7 +598,7 @@ class UIManager {
 
             const a = document.createElement('a');
             a.href = url;
-            a.download = `ongeki-io-config-${new Date().toISOString().split('T')[0]}.json`;
+            a.download = `mu3input_config.json`;
             a.click();
 
             URL.revokeObjectURL(url);
