@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ongeki IO Configurator</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Ongeki IO Configuration Generator</h1>
+            <p>Configure input devices for ongeki-io</p>
+        </header>
+
+        <main>
+            <section class="config-section">
+                <h2>Configuration Items</h2>
+
+                <div class="controls">
+                    <button id="add-config-btn" class="btn btn-primary">Add Configuration</button>
+                    <div class="file-controls">
+                        <button id="import-btn" class="btn btn-secondary">Import JSON</button>
+                        <button id="export-btn" class="btn btn-secondary">Export JSON</button>
+                        <input type="file" id="file-input" accept=".json" style="display: none;">
+                    </div>
+                </div>
+
+                <div id="config-list" class="config-list">
+                    <!-- Configuration items will be dynamically added here -->
+                </div>
+            </section>
+
+            <section class="config-form-section" id="config-form-section" style="display: none;">
+                <h2>Configuration Details</h2>
+
+                <form id="config-form">
+                    <div class="form-group">
+                        <label for="io-type">Input Type:</label>
+                        <select id="io-type" name="ioType" required>
+                            <option value="">Select Input Type</option>
+                            <option value="Hid">HID</option>
+                            <option value="Udp">UDP</option>
+                            <option value="Tcp">TCP</option>
+                            <option value="Usbmux">USB Multiplexer</option>
+                            <option value="Keyboard">Keyboard</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="scope">Scope:</label>
+                        <select id="scope" name="scope" required>
+                            <option value="">Select Scope</option>
+                            <option value="All">All</option>
+                            <option value="GamePlay">GamePlay (Buttons + Lever)</option>
+                            <option value="Buttons">Buttons (All buttons)</option>
+                            <option value="GameButtons">GameButtons (L1-L3, R1-R3, Side)</option>
+                            <option value="KeyBoard">KeyBoard (L1-L3, R1-R3)</option>
+                            <option value="Left">Left (L1-L3, LSide, LMenu)</option>
+                            <option value="Right">Right (R1-R3, RSide, RMenu)</option>
+                            <option value="Side">Side (LSide, RSide)</option>
+                            <option value="Menu">Menu (LMenu, RMenu)</option>
+                            <option value="Lever">Lever</option>
+                            <option value="Aime">Aime (Card Reader)</option>
+                            <option value="L1">L1</option>
+                            <option value="L2">L2</option>
+                            <option value="L3">L3</option>
+                            <option value="LSide">LSide</option>
+                            <option value="LMenu">LMenu</option>
+                            <option value="R1">R1</option>
+                            <option value="R2">R2</option>
+                            <option value="R3">R3</option>
+                            <option value="RSide">RSide</option>
+                            <option value="RMenu">RMenu</option>
+                        </select>
+                    </div>
+
+                    <div id="parameters-section" class="parameters-section">
+                        <!-- Dynamic parameter fields will be added here -->
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" id="save-config-btn" class="btn btn-primary">Save Configuration</button>
+                        <button type="button" id="cancel-config-btn" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="preview-section">
+                <h2>Configuration Preview</h2>
+                <pre id="config-preview" class="config-preview"></pre>
+            </section>
+        </main>
+    </div>
+
+    <script src="scripts/config.js"></script>
+    <script src="scripts/validation.js"></script>
+    <script src="scripts/ui.js"></script>
+</body>
+</html>
