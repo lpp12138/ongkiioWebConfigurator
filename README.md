@@ -1,5 +1,7 @@
 # Ongeki IO Web Configurator
 
+[![Github Pages](https://img.shields.io/badge/Github-Pages-green)](https://lpp12138.github.io/ongkiioWebConfigurator/)
+
 A configuration generator for [ongeki-io](https://github.com/Sanheiii/ongeki-io)
 
 ## Input Validation
