@@ -11,6 +11,6 @@ The configurator includes comprehensive validation:
 - **Keyboard**: Validates key codes and prevents duplicate mappings
 - **USB**: Validates device paths and baud rates
 
-**INPORTANT: NO Confilict Validation**  
+**IMPORTANT: NO Confilict Validation**  
 
 **USES AT YOUR OWN RISK**
